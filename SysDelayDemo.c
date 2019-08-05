@@ -3,14 +3,20 @@
 #include <sys/time.h>
 SysObj_t SysObjThis[1];
 Task_t Task[10];
+Timers_t Task1Timers[10];
 int Action_Task1(void *This)
 {
 	SysStart(This);
+	Task1Timers[0].TimerMode=TimerUP_E;
+	Task1Timers[0].Timer=0;
+        SysObjThis->SysTimerAdd(This,&Task1Timers[0]);
 	while (1) {
 		SysDelay(This,1000,1,NULL);
 		printf("This:Action_Taski1->1\r\n");
 		SysDelay(This,2000,1,NULL);
 		printf("This:Action_Taski1->2\r\n");
+                printf("Timers[0]:%ld",SysObjThis->SysGetTimer(This,&Task1Timers[0]));  
+
 	}
 	SysStop(Task);
 }
