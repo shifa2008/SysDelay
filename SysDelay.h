@@ -15,7 +15,7 @@ typedef enum
 }TimersMode_e;
 typedef enum
 {
-        Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
+    Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
 	TimerEvent_E,		//阻止一段时间 并且清除中断信号，条件成立接上次运行
 	Event_E,                //只阻止中断信号，条件成立接上次运行
 	TimerReset_E,           //时间到时重新运行指定任务
@@ -51,17 +51,16 @@ typedef struct TaskObj_n{
 	void (*SysTaskLoop)(struct TaskObj_n *ThisObj);                                                 //循环调度
 	void (*SysTimeSystick)(struct TaskObj_n *ThisObj);                                              //系统基准时钟
 	long (*SysGetTriggerSingnalMode)(struct TaskObj_n *ThisObj);                                    //获得触发信号-1为时间触发
-	void (*SysTimerAdd)(struct TaskObj_n *ThisObj,Timers_t *uTimers); 				//线程中开启定时器
-	long (*SysGetTimer)(struct TaskObj_n *ThisObj,Timers_t *uTimers);                                   //线程中获得定时器时间
-	void (*SysTriggerSignal)(struct TaskObj_n *ThisOjb,long Singnal);                               //线程中触发信号标志
-	void (*SysTaskStop)(struct TaskObj_n *ThisOjb,int (*Action)(void *This),long tim,SysTaskStopMode_e mode);//柱塞某个线程触发
+	void (*SysTimerAdd)(struct TaskObj_n *ThisObj,Timers_t *uTimers); 				                //线程中开启定时器
 	unsigned char *(*SysGetVer)(struct TaskObj_n *ThisObj);
 
-	void (*CrossthreadingSysTriggerSignal)(Task_t *This,long Singnal);                            //跨线程触发信号标志
-	void (*CrossthreadingSysTaskSleep)(Task_t *This,long Tim);                                   
-	long (*CrossthreadingGetTriggerSignal)(Task_t *This);                                          //跨线程获得该线程等待的信号信号标志
-	void (*CrossthreadingTimerStart)(Task_t *This,Timers_t *uTimers);			      //跨线程开启定时器
-	long (*CrossthreadingGetTimer)(Task_t *This,long Num);                                       //跨线程获得定时器的值
+	//具备夸线程能力的函数
+	void (*SysTaskSleep)(struct TaskObj_n *ThisOjb,int (*Action)(void *This),long tim,SysTaskStopMode_e mode);//柱塞某个线程触发
+	long (*SysTriggerSignal)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long Singnal);               //跨线程触发信号标志
+	long (*SysGetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num);                        //线程中获得定时器时间
+	long (*SysGetTriggerSignal)(struct TaskObj_n *ThisObj,int (*Action)(void *This));                         //跨线程获得该线程等待的信号信号标志
+	long (*SysSetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num,long tim);               //重新设置定线程定时器中的值
+
 }SysObj_t;
 void SysSetBreakpoint(SysObj_t *This,long Tim,long SetSingnal,long(*event)(void),long Lin);                       //
 void SysResetRun(SysObj_t *This);
@@ -69,7 +68,6 @@ long SysGetBreakpoint(SysObj_t *This);                                          
 SysObj_t *CreateSysObj(SysObj_t *This);
 #define SysStart(Task) switch(SysGetBreakpoint(Task)){case 0:               //协程开始
 #define SysDelay(Task,Tim,SetSingnal,event)  SysSetBreakpoint(Task,Tim,SetSingnal,event,__LINE__);return __LINE__;case __LINE__:  //挂起线程等待下一次唤醒
-
 #define SysStop(Task)  }return 0;                                             //协程结束
 #define SysReset(Task)  SysResetRun(Task);return __LINE__ ;
 
