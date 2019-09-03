@@ -4,11 +4,48 @@
 SysObj_t SysObjThis[1];
 Task_t Task[10];
 Timers_t Task1Timers[10];
-long EventTsk=0;
-int Action_Task3(void *This);
+//简单用法
+//简单延时
 int Action_Task1(void *This)
 {
 	SysStart(This);
+	printf("\r\nAction_Task3:start");
+	while (1) {
+		SysDelay(This,1000,1,NULL);										 //时间1000MS触发一次
+		printf("\r\nAction_Task1(%dms)",1000);
+	    SysDelay(This,2000,1,NULL);										 //时间2000MS触发一次
+		printf("\r\nAction_Task1(%dms)",2000);
+    }
+	SysStop(Task);
+}
+//开启线程监视 类似软件看门狗
+int Action_Task2(void *This)
+{
+	SysStart(This);
+	SysObjThis->SysWdgRefresh(SysObjThis,1000);
+	printf("\r\nAction_Task2:WdgStart");
+	while (1) {
+		SysDelay(This,100,1,NULL);										 //时间100MS触发一次
+		SysObjThis->SysWdgRefresh(SysObjThis,1000);
+    }
+	SysStop(Task);
+}
+//信号等待
+int Action_Task3(void *This)
+{
+	SysStart(This);
+	printf("\r\nAction_Task3:Start");
+	while (1) {
+		SysDelay(This,-1,1,NULL);										 //永久等待一个为1的信号  收到触发一次
+		printf("\r\nAction_Task3:singnal");
+    }
+	SysStop(Task);
+}
+//定时器
+int Action_Task4(void *This)
+{
+    SysStart(This);
+	printf("\r\nAction_Task4:Start");
 	Task1Timers[0].TimerMode=TimerUP_E;
 	Task1Timers[0].Timer=0;
     SysObjThis->SysTimerAdd(This,&Task1Timers[0]);// 正向定时器
@@ -20,41 +57,24 @@ int Action_Task1(void *This)
 		printf("\r\nThis:Action_Taski1->1");
 		SysDelay(This,2000,1,NULL);
 		printf("\r\nThis:Action_Taski1->2");
-        printf("\r\nTimers0:%ld",SysObjThis->SysGetTimer(This,Action_Task1,0));  //打印出定时器中的值
-		printf("\r\nTimers1:%ld",SysObjThis->SysGetTimer(This,Action_Task1,1));  //打印出定时器中的值
+        printf("\r\nTimers0:%ld",SysObjThis->SysGetTimer(This,Action_Task4,0));  //打印出定时器中的值
+		printf("\r\nTimers1:%ld",SysObjThis->SysGetTimer(This,Action_Task4,1));  //打印出定时器中的值
 	}
 	SysStop(Task);
 }
-int Action_Task2(void *This)
+//信号触发线程 
+int Action_Task5(void *This)
 {
 	SysStart(This);
+	printf("\r\nAction_Task5:Start");
 	while (1) {
-		SysDelay(This,1000,1,NULL);
-		printf("\r\nThis:Action_Taski2->1");
-		SysDelay(This,2000,1,NULL);
-		printf("\r\nThis:Action_Taski2->2");
-		if(SysObjThis->SysGetTimer(This,Action_Task1,1)<=0)
-		{
-			SysObjThis->SysSetTimer(SysObjThis,Action_Task1,1,10000);	   //重值Action_Task1中定时器1的值
-			SysObjThis->SysTriggerSignal(SysObjThis,Action_Task3,1);       //触发Action_Task3等待信号
-			printf("\r\nAction_Task1->Timers1:%ld",SysObjThis->SysGetTimer(This,Action_Task1,1));  //打印出定时器中的值
-		}
+		SysDelay(This,3000,1,NULL);
+ 		SysObjThis->SysTriggerSignal(SysObjThis,Action_Task3,1);       //触发Action_Task3等待1信号
 	}
 	SysStop(Task);
 }
-//信号等待触发
-int Action_Task3(void *This)
-{
-	SysStart(This);
-	while (1) {
-		SysDelay(This,-1,1,NULL);										 //永久等待一个线信号触发
-		printf("\r\nAction_Task3:singnal");
-		EventTsk=1;
-	    
-	}
-	SysStop(Task);
-}
-//函数触发
+
+/*
 long GetEventDemo(void)
 {
    if(EventTsk!=0)
@@ -64,16 +84,20 @@ long GetEventDemo(void)
    }
    return -1;
 }
+//函数触发
 int Action_Task4(void *This)
 {
 	SysStart(This);
+	SysObjThis->SysWdgRefresh(SysObjThis,10000);
+	printf("\r\nAction_Task3:WdgStart");
 	while (1) {
 		SysDelay(This,-1,0,GetEventDemo);										 //永久等待一个线信号触发
+	    SysObjThis->SysWdgRefresh(SysObjThis,10000);
 		printf("\r\nAction_Task4:Event");
 	    
 	}
 	SysStop(Task);
-}
+}*/
 
 void alarm_handle(int sig){  
  SysObjThis->SysTimeSystick(SysObjThis);
@@ -99,7 +123,10 @@ int main()
 
 	Task[3].Action=Action_Task4;
 	SysObjThis->SysTaskAdd(SysObjThis,&Task[3]);
-        signal(SIGALRM,alarm_handle);
+	
+	Task[4].Action=Action_Task5;
+	SysObjThis->SysTaskAdd(SysObjThis,&Task[4]);
+    signal(SIGALRM,alarm_handle);
 	set_time();
 	while(1)
 	{

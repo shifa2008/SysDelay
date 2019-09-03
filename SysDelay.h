@@ -30,6 +30,7 @@ typedef struct Timer_n{
 typedef struct{
 	long Timer;
 	long Singnal;
+	long WdgTimerMs;
 	long TriggerSingnal;
 	long Line;
 	void *This;
@@ -52,6 +53,7 @@ typedef struct TaskObj_n{
 	void (*SysTimeSystick)(struct TaskObj_n *ThisObj);                                              //系统基准时钟
 	long (*SysGetTriggerSingnalMode)(struct TaskObj_n *ThisObj);                                    //获得触发信号-1为时间触发
 	void (*SysTimerAdd)(struct TaskObj_n *ThisObj,Timers_t *uTimers); 				                //线程中开启定时器
+	void (*SysWdgRefresh)(struct TaskObj_n *ThisObj,long WdgTimerMs);
 	unsigned char *(*SysGetVer)(struct TaskObj_n *ThisObj);
 
 	//具备夸线程能力的函数
@@ -62,9 +64,9 @@ typedef struct TaskObj_n{
 	long (*SysSetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num,long tim);               //重新设置定线程定时器中的值
 
 }SysObj_t;
-void SysSetBreakpoint(SysObj_t *This,long Tim,long SetSingnal,long(*event)(void),long Lin);                       //
+void SysSetBreakpoint(SysObj_t *This,long Tim,long SetSingnal,long(*event)(void),long Lin);                      
 void SysResetRun(SysObj_t *This);
-long SysGetBreakpoint(SysObj_t *This);                                                         //
+long SysGetBreakpoint(SysObj_t *This);                                                         
 SysObj_t *CreateSysObj(SysObj_t *This);
 #define SysStart(Task) switch(SysGetBreakpoint(Task)){case 0:               //协程开始
 #define SysDelay(Task,Tim,SetSingnal,event)  SysSetBreakpoint(Task,Tim,SetSingnal,event,__LINE__);return __LINE__;case __LINE__:  //挂起线程等待下一次唤醒
