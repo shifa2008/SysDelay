@@ -15,7 +15,7 @@ typedef enum
 }TimersMode_e;
 typedef enum
 {
-    Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
+   	Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
 	TimerEvent_E,		//阻止一段时间 并且清除中断信号，条件成立接上次运行
 	Event_E,                //只阻止中断信号，条件成立接上次运行
 	TimerReset_E,           //时间到时重新运行指定任务
@@ -62,6 +62,7 @@ typedef struct TaskObj_n{
 	long (*SysGetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num);                        //线程中获得定时器时间
 	long (*SysGetTriggerSignal)(struct TaskObj_n *ThisObj,int (*Action)(void *This));                         //跨线程获得该线程等待的信号信号标志
 	long (*SysSetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num,long tim);               //重新设置定线程定时器中的值
+	Task_t *(*SysGetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));			    //读取线程全部状态
 
 }SysObj_t;
 void SysSetBreakpoint(SysObj_t *This,long Tim,long SetSingnal,long(*event)(void),long Lin);                      
