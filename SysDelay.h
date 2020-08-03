@@ -62,6 +62,7 @@ typedef struct TaskObj_n{
 	long (*SysGetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num);                        //线程中获得定时器时间
 	long (*SysGetTriggerSignal)(struct TaskObj_n *ThisObj,int (*Action)(void *This));                         //跨线程获得该线程等待的信号信号标志
 	long (*SysSetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num,long tim);               //重新设置定线程定时器中的值
+        long (*SysResetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));                               //复位指定线程      
 	Task_t *(*SysGetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));			    //读取线程全部状态
 
 }SysObj_t;
