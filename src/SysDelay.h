@@ -1,4 +1,4 @@
-﻿/*
+/*
  * SysDelay.h
  *
  *  Created on: 2019年6月30日
@@ -15,7 +15,7 @@ typedef enum
 }TimersMode_e;
 typedef enum
 {
-   	Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
+  Timer_E,		//阻止一段时间 中断信号正常运行,条件成立接上次运行
 	TimerEvent_E,		//阻止一段时间 并且清除中断信号，条件成立接上次运行
 	Event_E,                //只阻止中断信号，条件成立接上次运行
 	TimerReset_E,           //时间到时重新运行指定任务
@@ -30,6 +30,7 @@ typedef struct Timer_n{
 typedef struct{
 	long Timer;
 	long Singnal;
+	long SysWhile;
 	long WdgTimerMs;
 	long TriggerSingnal;
 	long Line;
@@ -62,16 +63,24 @@ typedef struct TaskObj_n{
 	long (*SysGetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num);                        //线程中获得定时器时间
 	long (*SysGetTriggerSignal)(struct TaskObj_n *ThisObj,int (*Action)(void *This));                         //跨线程获得该线程等待的信号信号标志
 	long (*SysSetTimer)(struct TaskObj_n *ThisObj,int (*Action)(void *This),long num,long tim);               //重新设置定线程定时器中的值
-        long (*SysResetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));                               //复位指定线程      
+  long (*SysResetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));                               //复位指定线程      
 	Task_t *(*SysGetTask)(struct TaskObj_n *ThisObj, int (*Action)(void *This));			    //读取线程全部状态
 
 }SysObj_t;
-void SysSetBreakpoint(SysObj_t *This,long Tim,long SetSingnal,long(*event)(void),long Lin);                      
+void SysSetBreakpoint(struct TaskObj_n *This, long Tim, long SetSingnal,long SysWhileVal, long (*event)(void), long Lin);                      
 void SysResetRun(SysObj_t *This);
 long SysGetBreakpoint(SysObj_t *This);                                                         
 SysObj_t *CreateSysObj(SysObj_t *This);
 #define SysStart(Task) switch(SysGetBreakpoint(Task)){case 0:               //协程开始
-#define SysDelay(Task,Tim,SetSingnal,event)  SysSetBreakpoint(Task,Tim,SetSingnal,event,__LINE__);return __LINE__;case __LINE__:  //挂起线程等待下一次唤醒
+//函数名：  SysDelay
+//作者：    zhuzhu
+//日期：    2022-02-22
+//功能：    在应用中实际，非阻塞延时
+//输入参数：struct TaskObj_n *This, long Tim, long SetSingnal,long SysWhileVal, long (*event)(void)
+//							协程主句柄            延时时间    触发信号          次数触发          外部触发
+//返回值：  int
+//修改记录：无
+#define SysDelay(Task,Tim,SetSingnal,SysWhileVal,event)  SysSetBreakpoint(Task,Tim,SetSingnal,SysWhileVal,event,__LINE__);return __LINE__;case __LINE__:  //挂起线程等待下一次唤醒
 #define SysStop(Task)  }return 0;                                             //协程结束
 #define SysReset(Task)  SysResetRun(Task);return __LINE__ ;
 

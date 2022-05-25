@@ -11,9 +11,10 @@ int Action_Task1(void *This)
 	SysStart(This);
 	printf("\r\nAction_Task3:start");
 	while (1) {
-		SysDelay(This,1000,1,NULL);										 //时间1000MS触发一次
+		SysDelay(This,1000,1,-1,NULL);										 //时间1000MS触发一次
 		printf("\r\nAction_Task1(%dms)",1000);
-	    SysDelay(This,2000,1,NULL);										 //时间2000MS触发一次
+	    SysDelay(This,2000,1,-1,NULL);	
+								 //时间2000MS触发一次
 		printf("\r\nAction_Task1(%dms)",2000);
     }
 	SysStop(Task);
@@ -25,7 +26,7 @@ int Action_Task2(void *This)
 	SysObjThis->SysWdgRefresh(SysObjThis,1000);
 	printf("\r\nAction_Task2:WdgStart");
 	while (1) {
-		SysDelay(This,100,1,NULL);										 //时间100MS触发一次
+		SysDelay(This,100,1,-1,NULL);										 //时间100MS触发一次
 		SysObjThis->SysWdgRefresh(SysObjThis,1000);
     }
 	SysStop(Task);
@@ -36,7 +37,7 @@ int Action_Task3(void *This)
 	SysStart(This);
 	printf("\r\nAction_Task3:Start");
 	while (1) {
-		SysDelay(This,-1,1,NULL);										 //永久等待一个为1的信号  收到触发一次
+		SysDelay(This,-1,1,-1,NULL);										 //永久等待一个为1的信号  收到触发一次
 		printf("\r\nAction_Task3:singnal");
     }
 	SysStop(Task);
@@ -53,9 +54,9 @@ int Action_Task4(void *This)
 	Task1Timers[1].Timer=5000;
     SysObjThis->SysTimerAdd(This,&Task1Timers[1]);// 反向定时器到0停止
 	while (1) {
-		SysDelay(This,1000,1,NULL);
+		SysDelay(This,1000,1,-1,NULL);
 		printf("\r\nThis:Action_Taski1->1");
-		SysDelay(This,2000,1,NULL);
+		SysDelay(This,2000,1,-1,NULL);
 		printf("\r\nThis:Action_Taski1->2");
         printf("\r\nTimers0:%ld",SysObjThis->SysGetTimer(This,Action_Task4,0));  //打印出定时器中的值
 		printf("\r\nTimers1:%ld",SysObjThis->SysGetTimer(This,Action_Task4,1));  //打印出定时器中的值
@@ -68,7 +69,7 @@ int Action_Task5(void *This)
 	SysStart(This);
 	printf("\r\nAction_Task5:Start");
 	while (1) {
-		SysDelay(This,3000,1,NULL);
+		SysDelay(This,3000,1,-1,NULL);
  		SysObjThis->SysTriggerSignal(SysObjThis,Action_Task3,1);       //触发Action_Task3等待1信号
 	}
 	SysStop(Task);
@@ -91,7 +92,7 @@ int Action_Task4(void *This)
 	SysObjThis->SysWdgRefresh(SysObjThis,10000);
 	printf("\r\nAction_Task3:WdgStart");
 	while (1) {
-		SysDelay(This,-1,0,GetEventDemo);										 //永久等待一个线信号触发
+		SysDelay(This,-1,0,-1,GetEventDemo);										 //永久等待一个线信号触发
 	    SysObjThis->SysWdgRefresh(SysObjThis,10000);
 		printf("\r\nAction_Task4:Event");
 	    
@@ -105,13 +106,14 @@ void alarm_handle(int sig){
 void set_time(void){
 	struct itimerval itv;
 	itv.it_interval.tv_sec=0;
-	itv.it_interval.tv_usec=1; //鑷姩瑁呰浇寰�?
+	itv.it_interval.tv_usec=1000; 
 	itv.it_value.tv_sec=0;
-	itv.it_value.tv_usec=1;    //鍚姩鍊? 1寰
+	itv.it_value.tv_usec=1000;  
 	setitimer(ITIMER_REAL,&itv,NULL);
 }  
 int main()
 {
+             printf("\r\nstart\r\n");
 	CreateSysObj(SysObjThis);
 	Task[0].Action=Action_Task1;          
 	SysObjThis->SysTaskAdd(SysObjThis,&Task[0]);
@@ -126,8 +128,10 @@ int main()
 	
 	Task[4].Action=Action_Task5;
 	SysObjThis->SysTaskAdd(SysObjThis,&Task[4]);
-    signal(SIGALRM,alarm_handle);
+ 	signal(SIGALRM,alarm_handle);
+                printf("\r\nalarm_handle\r\n");
 	set_time();
+
 	while(1)
 	{
 		SysObjThis->SysTaskLoop(SysObjThis);
