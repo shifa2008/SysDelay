@@ -16,12 +16,12 @@ $(TARGETS): %: %.o
 	$(CCC)  -Wall -I ./src   -o $@ $<  -L. -lFunc 
 	
 $(OBJS): %.o: %.c  
-	$(CCC) -Wall -I ./src -c $(CPU) -o $@ $<
+	$(CCC) -Wall -I ./src -fshort-wchar -c $(CPU) -o $@ $<
 lib-pc:
-	$(CCC) -Wall -I ./src  $(PARA) -c $(CPU) $(wildcard ./src/*.c) -o libFunc$(CPU).o
+	$(CCC) -Wall -I ./src -fshort-wchar $(PARA) -c $(CPU) $(wildcard ./src/*.c) -o libFunc$(CPU).o
 	$(CC)ar crv ./libFunc$(PARA).a libFunc$(CPU).o 	
 lib-arm:
-	$(CCC) -Wall -I ./src  $(PARA) -c $(CPU) $(wildcard ./src/*.c) -o libFunc$(CPU).o
+	$(CCC) -Wall -I ./src -fshort-wchar $(PARA) -c $(CPU) $(wildcard ./src/*.c) -o libFunc$(CPU).o
 	$(CC)ar crv ./libFunci"$(PARA)".a libFunc$(CPU).o
 clean :
 	    @rm -rf $(TARGETS) $(OBJS) libFunc*
